@@ -30,15 +30,20 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        echo "OPENAI_API_KEY=test-key" > .env
+        echo "Transcribe all text from this image accurately." > prompt.txt
     
     - name: Lint with flake8
       run: |
         pip install flake8
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=.git,__pycache__,.github
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=.git,__pycache__,.github
     
     - name: Test import modules
+      env:
+        OPENAI_API_KEY: "test-key"
       run: |
         python -c "import pdf_to_images"
         python -c "import enhance_text_images"
-        python -c "import combine_text_files" 
+        python -c "import combine_text_files"
+        python -c "import sys; import transcribe_images; print('All imports successful')" 
