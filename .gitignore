@@ -1,10 +1,8 @@
-# Environment
 .env
 venv/
 env/
 ENV/
 
-# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -28,26 +26,21 @@ share/python-wheels/
 .installed.cfg
 *.egg
 
-# Output files
 transcription*.txt
 *_images/
 *_enhanced/
 *_transcriptions/
 
-# PDF files
 *.pdf
 
-# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS
 .DS_Store
 Thumbs.db
 
-# Logs
 *.log
 
 .DS_Store?

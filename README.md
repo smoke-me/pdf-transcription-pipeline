@@ -76,6 +76,7 @@ python run_pipeline.py
 
 ### Environment Variables
 - `OPENAI_API_KEY`: Required for transcription service
+- `OPENAI_MODEL`: Optional. Sets the OpenAI model for transcription (e.g., `gpt-4.1-mini`, `gpt-4o`). Defaults to `gpt-4.1-mini`.
 
 ### Custom Prompts
 Modify `prompt.txt` to customize transcription behavior and output format.

@@ -5,6 +5,7 @@ import glob
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import psutil
 import threading
+import argparse
 
 
 def calculate_safe_thread_counts():
@@ -217,25 +218,29 @@ def get_unique_name(base_path):
 
 
 def main():
-    arg = sys.argv[1] if len(sys.argv) > 1 else None
-    current_directory = os.getcwd()
-    target_directory = None
+    parser = argparse.ArgumentParser(description="Combine multiple text files from a directory into a single file.")
+    parser.add_argument("text_directory", nargs='?', default=None, help="Directory containing text files to combine. If not provided, prompts for selection.")
+    args = parser.parse_args()
 
-    if arg:
-        if os.path.isdir(arg):
-            target_directory = os.path.abspath(arg)
-        else:
-        print("Invalid")
+    target_directory = args.text_directory
+
+    if target_directory and not os.path.isdir(target_directory):
+        print(f"Error: Directory not found at {target_directory}")
         sys.exit(1)
 
     if not target_directory:
+        current_directory = os.getcwd()
         directories = list_directories(current_directory)
+        if not directories:
+            print("No subdirectories found to process.")
+            sys.exit(0)
         selected_dir = pick_directory(directories)
         target_directory = os.path.join(current_directory, selected_dir)
 
     text_files = get_text_files(target_directory)
 
     if not text_files:
+        print(f"No text files found in {target_directory}.")
         sys.exit(1)
 
     total_size_bytes = calculate_total_file_size(text_files)
@@ -267,7 +272,7 @@ def main():
         processing_time = end_time - start_time
 
         if failed_files:
-        print(f"Failed: {len(failed_files)}")
+            print(f"Failed: {len(failed_files)}")
 
     except Exception as e:
         print("Error")

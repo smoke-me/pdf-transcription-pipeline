@@ -7,6 +7,7 @@ from openai import OpenAI
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import psutil
 import threading
+import argparse
 
 
 def calculate_safe_thread_counts():
@@ -149,11 +150,13 @@ def transcribe_image_with_retry(client, prompt, image_path, max_retries=None):
     else:
         media_type = 'image/png'
 
+    model = os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+
     while True:
         attempt += 1
         try:
             response = client.chat.completions.create(
-                model="gpt-4.1-mini",
+                model=model,
                 messages=[
                     {
                         "role": "user",
@@ -260,6 +263,10 @@ def get_unique_name(base_path):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Transcribe text from images using OpenAI's vision model.")
+    parser.add_argument("image_directory", nargs='?', default=None, help="Directory of images to transcribe. If not provided, prompts for selection.")
+    args = parser.parse_args()
+
     api_threads = calculate_safe_thread_counts()
 
     load_env()
@@ -273,25 +280,25 @@ def main():
 
     prompt = load_prompt()
 
-    arg = sys.argv[1] if len(sys.argv) > 1 else None
-    current_directory = os.getcwd()
-    target_directory = None
-
-    if arg:
-        if os.path.isdir(arg):
-            target_directory = os.path.abspath(arg)
-        else:
-            print("Invalid directory")
-            sys.exit(1)
+    target_directory = args.image_directory
+    
+    if target_directory and not os.path.isdir(target_directory):
+        print(f"Error: Directory not found at {target_directory}")
+        sys.exit(1)
 
     if not target_directory:
+        current_directory = os.getcwd()
         directories = list_directories(current_directory)
+        if not directories:
+            print("No subdirectories found to process.")
+            sys.exit(0)
         selected_dir = pick_directory(directories)
         target_directory = os.path.join(current_directory, selected_dir)
 
     image_files = get_image_files(target_directory)
 
     if not image_files:
+        print(f"No image files found in {target_directory}.")
         sys.exit(1)
 
     dir_basename = os.path.basename(target_directory.rstrip(os.sep))
@@ -303,7 +310,7 @@ def main():
 
     try:
         start_time = time.time()
-        processed_images = process_images_parallel(
+        process_images_parallel(
             image_files, output_dir, client, prompt, api_threads)
         end_time = time.time()
 

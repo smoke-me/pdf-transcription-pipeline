@@ -36,8 +36,16 @@ jobs:
     - name: Lint with flake8
       run: |
         pip install flake8
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=.git,__pycache__,.github
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=.git,__pycache__,.github
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=.git,__pycache__,.github,venv,env
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=.git,__pycache__,.github,venv,env
+    
+    - name: Test script execution
+      run: |
+        python run_pipeline.py --help
+        python pdf_to_images.py --help
+        python enhance_text_images.py --help
+        python transcribe_images.py --help
+        python combine_text_files.py --help
     
     - name: Test import modules
       env:

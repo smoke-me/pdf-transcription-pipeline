@@ -2,6 +2,7 @@ import os
 import sys
 import glob
 from pdf2image import convert_from_path
+import argparse
 
 def list_pdf_files(directory):
     pdf_files = []
@@ -49,19 +50,25 @@ def convert_pdf_to_images(pdf_path, output_dir):
         return 0
 
 def main():
-    arg = sys.argv[1] if len(sys.argv) > 1 else None
+    parser = argparse.ArgumentParser(description="Convert a PDF file to a series of images.")
+    parser.add_argument("pdf_file", nargs='?', default=None, help="Path to the PDF file. If not provided, prompts for selection in current directory.")
+    args = parser.parse_args()
+
     directory = os.getcwd()
-    
-    if arg:
-        if os.path.isfile(arg) and arg.lower().endswith('.pdf'):
-            pdf_file = arg
-        else:
-            print("Invalid PDF file")
-            sys.exit(1)
-    else:
+    pdf_file = args.pdf_file
+
+    if pdf_file and not (os.path.isfile(pdf_file) and pdf_file.lower().endswith('.pdf')):
+        print(f"Error: Invalid or non-existent PDF file: {pdf_file}")
+        sys.exit(1)
+
+    if not pdf_file:
         pdf_files = list_pdf_files(directory)
-        pdf_file = os.path.join(directory, pick_pdf(pdf_files))
-    
+        if not pdf_files:
+            print("No PDF files found in the current directory.")
+            sys.exit(0)
+        selected_pdf = pick_pdf(pdf_files)
+        pdf_file = os.path.join(directory, selected_pdf)
+
     pdf_basename = os.path.splitext(os.path.basename(pdf_file))[0]
     base_output_dir = os.path.join(os.path.dirname(pdf_file), f"{pdf_basename}_images")
     output_dir = get_unique_name(base_output_dir)

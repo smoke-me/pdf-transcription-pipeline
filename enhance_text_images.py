@@ -6,10 +6,10 @@ from PIL import Image, ImageEnhance, ImageFilter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import psutil
 import threading
-import queue
 import time
 import glob
 from pathlib import Path
+import argparse
 
 
 def calculate_safe_thread_counts():
@@ -183,27 +183,31 @@ def process_images_parallel(image_files, output_dir, process_threads):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Enhance images in a directory for better text recognition.")
+    parser.add_argument("image_directory", nargs='?', default=None, help="Directory containing images to enhance. If not provided, prompts for selection.")
+    args = parser.parse_args()
+
     process_threads = calculate_safe_thread_counts()
-
-    arg = sys.argv[1] if len(sys.argv) > 1 else None
-    current_directory = os.getcwd()
-    target_directory = None
-
-    if arg:
-        if os.path.isdir(arg):
-            target_directory = os.path.abspath(arg)
-        else:
-            print("Invalid")
+    
+    target_directory = args.image_directory
+    
+    if target_directory and not os.path.isdir(target_directory):
+        print(f"Error: Directory not found at {target_directory}")
         sys.exit(1)
 
     if not target_directory:
+        current_directory = os.getcwd()
         directories = list_directories(current_directory)
+        if not directories:
+            print("No subdirectories found to process.")
+            sys.exit(0)
         selected_dir = pick_directory(directories)
         target_directory = os.path.join(current_directory, selected_dir)
 
     image_files = get_image_files(target_directory)
 
     if not image_files:
+        print(f"No image files found in {target_directory}")
         sys.exit(1)
 
     dir_basename = os.path.basename(target_directory.rstrip(os.sep))

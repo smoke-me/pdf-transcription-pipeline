@@ -283,40 +283,44 @@ def show_help():
     pass
 
 def main():
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('pdf_file', nargs='?', help='Path to PDF file')
-    parser.add_argument('--keep', action='store_true', help='Keep intermediate directories')
-    parser.add_argument('--help', action='store_true', help='Show help')
-
-    try:
-        args = parser.parse_args()
-    except SystemExit:
-        show_help()
-        return
-
-    if args.help:
-        show_help()
-        return
+    parser = argparse.ArgumentParser(
+        description="Run the full PDF to text transcription pipeline.",
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+    parser.add_argument('pdf_file', nargs='?', default=None, help='Path to the PDF file to process.\nIf not provided, the script scans the current directory for PDFs.')
+    parser.add_argument('--keep', action='store_true', help='Keep intermediate directories.')
+    args = parser.parse_args()
 
     python_executable = setup_environment()
     if not python_executable:
+        print("Failed to set up Python virtual environment.")
         sys.exit(1)
 
     pipeline = PipelineManager(keep_directories=args.keep, python_executable=python_executable)
 
     try:
-        pdf_path = None
+        pdf_path = args.pdf_file
 
-        if args.pdf_file:
-            if os.path.isfile(args.pdf_file) and args.pdf_file.lower().endswith('.pdf'):
-                pdf_path = os.path.abspath(args.pdf_file)
-            else:
+        if pdf_path:
+            if not (os.path.isfile(pdf_path) and pdf_path.lower().endswith('.pdf')):
+                print(f"Error: Invalid PDF file path: {pdf_path}")
                 sys.exit(1)
+            pdf_path = os.path.abspath(pdf_path)
         else:
             current_dir = os.getcwd()
             pdf_files = pipeline.find_pdf_files(current_dir)
-            selected_pdf = pipeline.select_pdf_with_timeout(pdf_files)
+            if not pdf_files:
+                print("No PDF files found in the current directory.")
+                sys.exit(1)
+            
+            if os.environ.get("CI"):
+                print("CI environment detected, selecting first PDF.")
+                selected_pdf = pdf_files[0]
+            else:
+                selected_pdf = pipeline.select_pdf_with_timeout(pdf_files)
+
             if selected_pdf is None:
+                print("No PDF selected or selection timed out.")
                 sys.exit(1)
             pdf_path = os.path.join(current_dir, selected_pdf)
 
