@@ -1,7 +1,26 @@
+# Core PDF processing dependencies
 pdf2image>=1.16.0
+# poppler-utils required - install via system package manager (see README.md)
+
+# Image processing dependencies  
 opencv-python>=4.8.0
 Pillow>=10.0.0
+numpy>=1.24.0
+
+# AI/API dependencies
 openai>=1.0.0
+tiktoken>=0.4.0
+
+# System monitoring
 psutil>=5.9.0
+
+# Configuration management
 python-dotenv>=1.0.0
-numpy>=1.24.0 
+
+# Build and packaging utilities
+setuptools>=68.0.0
+PyYAML>=6.0.0
+click>=7.0
+
+# Note: The following are included to resolve common dependency conflicts
+# that may occur in different Python environments 

@@ -150,7 +150,7 @@ def transcribe_image_with_retry(client, prompt, image_path, max_retries=None):
     else:
         media_type = 'image/png'
 
-    model = os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+    model = os.environ.get("OPENAI_MODEL", "gpt-4.1")
 
     while True:
         attempt += 1

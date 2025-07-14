@@ -31,7 +31,7 @@ def get_python_executable():
                                   capture_output=True, text=True, timeout=10)
             if result.returncode == 0:
                 return python_cmd
-        except (subprocess.TimeoutExpired, FileNotFoundError):
+        except (subprocess.TimeoutExpired, FileNotFoundError, NotADirectoryError, OSError):
             continue
     return None
 
